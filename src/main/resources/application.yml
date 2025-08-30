@@ -1,0 +1,71 @@
+server:
+  port: 8080
+
+spring:
+  main:
+    web-application-type: reactive
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:usersdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+logging:
+  level:
+    com.nisum.user: DEBUG
+
+app:
+  password:
+    regex: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{8,20}$'
+
+jwt:
+  rs256:
+    key-id: "registration"
+    public-key-pem: |
+      -----BEGIN PUBLIC KEY-----
+      MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsPhszNRiGCNMEKfy5qUP
+      Qpi9LSkoR/fo/A5Io3+uEcTPq0BQwzYEAYoU81QAdkXY9xfT9p7PFREAa6BohqbO
+      ID+DDEibXJ6/4DDL7VdS8E5pj49gurFEOoqNFXu/q/gFwegpQx3ZWI3l+wc7RfgM
+      yEytWvUbBRODzw4JTxK95H4b768mQ0z3+XalJJiaRtdX03825jwuJirqpOElHl70
+      Qr+6L9s8qjK4Nje/tyasEUQead5qYpG1B2qThxc6hslDJAs4G5Yw2DKUjnOv4A0W
+      5RnjHY4/XBooQbwkKtcOS4dcC7MlJ6UJ253Ku+pp1qpZEOG0Lnpl6dhLFPLigf1l
+      7wIDAQAB
+      -----END PUBLIC KEY-----
+    private-key-pem: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCw+GzM1GIYI0wQ
+      p/LmpQ9CmL0tKShH9+j8Dkijf64RxM+rQFDDNgQBihTzVAB2Rdj3F9P2ns8VEQBr
+      oGiGps4gP4MMSJtcnr/gMMvtV1LwTmmPj2C6sUQ6io0Ve7+r+AXB6ClDHdlYjeX7
+      BztF+AzITK1a9RsFE4PPDglPEr3kfhvvryZDTPf5dqUkmJpG11fTfzbmPC4mKuqk
+      4SUeXvRCv7ov2zyqMrg2N7+3JqwRRB5p3mpikbUHapOHFzqGyUMkCzgbljDYMpSO
+      c6/gDRblGeMdjj9cGihBvCQq1w5Lh1wLsyUnpQnbncq76mnWqlkQ4bQuemXp2EsU
+      8uKB/WXvAgMBAAECggEAQaP7kyQJuINLIPhyn7tEhEKsFJaqArvBFtDjf4WJ1rxl
+      /NKvwiCEbt+9Mp4LR9NTjR8w905jaCB0w/btHli7pvl3zbQWsE2PxQPEeCXGNS0Y
+      eW/IhKbgtEgU2Y2bhBlMZWaL+4GUTwTe83P0t9iwQREz0cONQJ5C6yd9K2+7sIa4
+      d6KGfwzAplQJUhgl5Y/2rOS74FyV2gjPnrqwrQ1+SV1hmOqTn8DXlF7GbZBxxF72
+      /hnlQgD/sit5rkY+PSrYlsyGwDvXxg1pB5U9kgBWM9CQLftZU5wWhBH/Xw6fjIaM
+      eauJY7HT1sKwb4CculomxRcTcsCb08LPTdTVU6iqhQKBgQD3mt8T3jPAOsOIadE6
+      YA0Cnjx2a/lRBhOYBFuyLwFvY5V7WcZN5N7cFRTZQqucEFatIllLglFglNK3fFxt
+      14RZFXPZomL+WvVZXhpX0wbzS6VUyTHw6wXMegY13nD2synEaBTBWq5t6oBhsGrF
+      6etyzQ9BnrYjm6bTA4zaWkgwZQKBgQC2+Hgc86XC1LVGW8KxjGbXWEMw+38S/zdI
+      myhXwE3vNS136wLJbxOdj475eJAccBEtNwTFnSCbhYV6jmyhgIO9xXimEq6eYNAz
+      KKiG8w9fc9RWkjSO3LHIxagsHdcKCNluCchd8Vtw0LW046h/1EL/W8Q+4uZr8+w8
+      T9kCyMNVwwKBgQCHq96r/kcQ/6IAbyrr95Fpa9bpdIRp9xBpbYno+oSoykIwEqLs
+      L4pFwW9pFHT/0JwNxhJzo3Z/m0xSqdvjfAHS5kRSbf4cLS7exwdcNA9M5Jg0+wFY
+      Zw8IWZxpi/cN1mH+cqFcyRlmtOWfoZD/3QrcHqxLYnGe1Tz1xq45PtrrWQKBgG/k
+      dx/NaFtDVTAXwXJumB2tHjoAMu/dH2PJbtxq/73/WTTyhRvGT8qVFiw9rHOXnQl3
+      kfV/Z4d0GfKe0pPZUbdl4ag92IeGUQxYGuecEJSg8wOWGYocMKTFK1j/TpgWXVFL
+      rjq09OSC3fwnFM5HcklTRynl/F+cJaWkduOa/smdAoGBAN3+pLhnhxNuQLGYRvk7
+      zwoxdgWlDJNDE63Lple9AWelg6MEdnhBVhnEuz8ByoYwy9/5KPWw6X1v/nb/1cPI
+      4MZqr1Qhvj2RcNqZt5syemynMKxOcEoKlCXaEhT2d1ovr0e3MBbUa8W+4da0b/O2
+      9bvvw7gs7ntoPJDWqFpdb/gF
+      -----END PRIVATE KEY-----
+
+
