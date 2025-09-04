@@ -1,0 +1,11 @@
+{
+  "email": "john@doe.com",
+  "token": "jwt-123",
+  "phones": [
+    {
+      "number": "1234567",
+      "cityCode": "1",
+      "countryCode": "57"
+    }
+  ]
+}

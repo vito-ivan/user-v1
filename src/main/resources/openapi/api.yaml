@@ -1,0 +1,287 @@
+openapi: 3.0.3
+info:
+  title: API User V1
+  version: 1.0.1
+  description: |
+    REST API to create users.
+servers:
+  - url: http://localhost:8080/user-v1
+    description: Local development
+tags:
+  - name: Users
+    description: Registration operations
+
+paths:
+  /users:
+    post:
+      tags: [ Users ]
+      summary: Register user
+      description: |
+        Creates a new user.
+        - If the email already exists, return **409** with message **"Email already registered"**.
+        - On success, returns the user with audit fields and a persisted **token**.
+      operationId: registerUser
+      security: [ ]
+      requestBody:
+        description: User data to create a new account.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+            examples:
+              validExample:
+                summary: Valid request example
+                value:
+                  name: John Rodriguez
+                  email: john@rodriguez.org
+                  password: Lima2070$
+                  phones:
+                    - number: "1234567"
+                      cityCode: "1"
+                      countryCode: "57"
+                    - number: "987654321"
+                      cityCode: "1"
+                      countryCode: "51"
+      responses:
+        '201':
+          description: User created
+          headers:
+            Location:
+              description: URL of the created resource.
+              schema:
+                type: string
+              example: /api/v1/users/3fa85f64-5717-4562-b3fc-2c963f66afa6
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                created:
+                  summary: Example user
+                  value:
+                    id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                    name: "John Rodriguez"
+                    email: "john@rodriguez.org"
+                    phones:
+                      - number: "1234567"
+                        cityCode: "1"
+                        countryCode: "57"
+                      - number: "987654321"
+                        cityCode: "1"
+                        countryCode: "51"
+                    created: "2025-08-29T10:15:30Z"
+                    modified: "2025-08-29T10:15:30Z"
+                    lastLogin: "2025-08-29T10:15:30Z"
+                    token: "<jwt>"
+                    isActive: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/ConflictEmail'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        default:
+          $ref: '#/components/responses/DefaultError'
+
+components:
+  responses:
+    BadRequest:
+      description: Validation error (invalid email/password format, malformed body).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/AppException' }
+          examples:
+            invalidEmail: { value: { message: "Email does not match the required format" } }
+            invalidPassword: { value: { message: "Password does not meet complexity policy" } }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+    ConflictEmail:
+      description: Conflict - email already registered.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/AppException' }
+          examples:
+            duplicate: { value: { message: "Email already registered" } }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+    UnprocessableEntity:
+      description: Business/semantic validation failed (e.g., password policy or other domain rules).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/AppException' }
+          examples:
+            policy: { value: { message: "Password does not meet policy" } }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+    TooManyRequests:
+      description: Rate limit exceeded.
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema: { type: integer, minimum: 1 }
+          example: 30
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/AppException' }
+          examples:
+            ratelimit: { value: { message: "Too many requests" } }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+    InternalError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/AppException' }
+          examples:
+            generic: { value: { message: "Unexpected error" } }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+    DefaultError:
+      description: Unexpected error.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/AppException' }
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetails' }
+
+  schemas:
+    Phone:
+      type: object
+      description: User phone record.
+      additionalProperties: false
+      properties:
+        number:
+          type: string
+          description: Phone number (digits only).
+          pattern: '^\d{5,15}$'
+          example: "1234567"
+        cityCode:
+          type: string
+          description: City code (digits only).
+          pattern: '^\d{1,5}$'
+          example: "1"
+        countryCode:
+          type: string
+          description: Country code (digits only).
+          pattern: '^\d{1,5}$'
+          example: "57"
+      required: [ number, cityCode, countryCode ]
+
+    UserRequest:
+      type: object
+      description: Registration payload.
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          description: Full name.
+          maxLength: 50
+          minLength: 1
+          example: John Rodriguez
+        email:
+          type: string
+          format: email
+          description: Must match a regex indicating a correct format.
+          x-field-extra-annotation: "@jakarta.validation.constraints.Email"
+          maxLength: 100
+          example: john@rodriguez.org
+        password:
+          type: string
+          description: |
+            Must match a configurable regex.
+            **Example (illustrative only):** 8–20 chars, with uppercase, lowercase, digit, and symbol.
+          minLength: 8
+          maxLength: 20
+          writeOnly: true
+          x-field-extra-annotation: "@com.nisum.user.infrastructure.validation.PasswordPolicy"
+          example: Lima2070$
+        phones:
+          type: array
+          description: Up to 3 phone numbers.
+          minItems: 0
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/Phone'
+          uniqueItems: false
+      required: [ name, email, password, phones ]
+
+    UserResponse:
+      type: object
+      description: Created user with metadata and persisted token.
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User identifier (UUID).
+          readOnly: true
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+          readOnly: true
+        phones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Phone'
+        created:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with offset or Z.
+          readOnly: true
+          x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING)"
+        modified:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with offset or Z.
+          readOnly: true
+          x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING)"
+        lastLogin:
+          type: string
+          format: date-time
+          description: For a new user, equals the creation time. RFC 3339.
+          readOnly: true
+          x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING)"
+        token:
+          type: string
+          description: Access token (JWT).
+          readOnly: true
+        isActive:
+          type: boolean
+          description: Indicates whether the user remains enabled in the system.
+          readOnly: true
+      required:
+        [ id, name, email, phones, created, modified, lastLogin, token, isActive ]
+
+    AppException:
+      type: object
+      description: Simple error envelope.
+      additionalProperties: false
+      properties:
+        message:
+          type: string
+          example: Email already registered
+      required: [ message ]
+
+    ProblemDetails:
+      type: object
+      description: RFC 7807 Problem Details
+      additionalProperties: true
+      properties:
+        type: { type: string, format: uri, example: "https://example.com/problems/invalid-params" }
+        title: { type: string, example: "Bad Request" }
+        status: { type: integer, format: int32, example: 400 }
+        detail: { type: string, example: "Email does not match the required format" }
+        instance: { type: string, format: uri, example: "/api/v1/users" }
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
