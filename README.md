@@ -97,3 +97,4 @@ Connection details (from `application.yml`)
 - Driver: `org.h2.Driver`
 - User: `sa`
 - Password: (empty)
+
